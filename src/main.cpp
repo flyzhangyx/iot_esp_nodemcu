@@ -96,8 +96,7 @@ const char *getWeekdayByYearday(int iY, int iM, int iD);
 void onKeyEvent(); //-1 down , 0 nothing , 1 up
 void Send9Server();
 void Send8Server();
-void Send4Server_LightStrength(float strength);
-void Send4Server_D6_status();
+void Send4Server_LightStrength_D6(float strength);
 void InitRsaAndPin();
 void REGANDSIGN();
 ///*******
@@ -419,9 +418,11 @@ void PeriodTask()
   }
   if (timer % 5000 == 0)
   {
+    Send4Server_LightStrength_D6(LightStrength);
+  }
+  if (timer % 6000 == 0)
+  {
     GetIotCmd(0);
-    Send4Server_LightStrength(LightStrength);
-    Send4Server_D6_status();
     if (ErrCnt > 10)
     {
       Connect2Server();
@@ -431,6 +432,7 @@ void PeriodTask()
       ESP.restart();
     }
   }
+
   if (timer % 8000 == 0)
   {
     GetSceCmd();
@@ -759,35 +761,17 @@ void Send8Server()
   cln.flush(50);
 }
 
-void Send4Server_LightStrength(float strength)
+void Send4Server_LightStrength_D6(float strength)
 {
   IotPacketInterface tmp;
   memset(&tmp, 0, sizeof(IotPacketInterface));
   char tmpbuf[30];
   tmp.opCode[0] = '0';
   tmp.opCode[1] = '4';
-  sprintf(tmp.payLoad, "3_%.2f_", strength); //brightness
+  sprintf(tmp.payLoad, "3_%.2f_0_%d_", strength,digitalRead(D6)); //brightness
   Encrypt(tmp.payLoad, strlen(tmp.payLoad), pin, tmp.payLoad);
   memcpy(tmpbuf, &tmp, 30);
   int len = cln.write_P(tmpbuf, 30);
-  if (len == 0)
-  {
-    ErrCnt++;
-  }
-  cln.flush(50);
-}
-
-void Send4Server_D6_status()
-{
-  IotPacketInterface tmp;
-  memset(&tmp, 0, sizeof(IotPacketInterface));
-  char tmpbuf[11];
-  tmp.opCode[0] = '0';
-  tmp.opCode[1] = '4';
-  sprintf(tmp.payLoad, "0_%d_", digitalRead(D6));
-  Encrypt(tmp.payLoad, strlen(tmp.payLoad), pin, tmp.payLoad);
-  memcpy(tmpbuf, &tmp, 11);
-  int len = cln.write_P(tmpbuf, 11);
   if (len == 0)
   {
     ErrCnt++;
