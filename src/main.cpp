@@ -144,9 +144,10 @@ void threadExeMSG()
     }
     break;
     case 1:
-      Serialsend('1', outStr[2]);
+      Serialsend('1', outStr[1]);
       break;
     default:
+      Serialsend(atoi(outStr[0])+'0', outStr[1]);
       break;
     }
     releaseStr(outStr, OutStrSize);
