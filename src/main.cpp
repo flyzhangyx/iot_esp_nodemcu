@@ -415,6 +415,7 @@ void PeriodTask()
   }
   if (timer % 4000 == 0)
   {
+    GetIotCmd(0);
     CheckSceCmd(5);
   }
   if (timer % 5000 == 0)
@@ -423,7 +424,6 @@ void PeriodTask()
   }
   if (timer % 6000 == 0)
   {
-    GetIotCmd(0);
     if (ErrCnt > 10)
     {
       Connect2Server();
