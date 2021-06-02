@@ -406,29 +406,36 @@ void PeriodTask()
 {
   static char LastTime[20];
   static volatile long timer = 0;
+  static volatile float LightStrLastRec = 0;
   InitRsaAndPin();
   REGANDSIGN();
   timer++;
-  if (timer % 1000 == 0)
+  if (timer % 200 == 0)
   {
     LightStrength = analogRead(A0) / 10.24;
+    if(abs(LightStrLastRec-LightStrength)>5)
+    {
+      LightStrLastRec = LightStrength;
+      Send4Server_LightStrength_D6(LightStrength);
+    }
   }
-  if (timer % 4000 == 0)
+  if (timer % 2000 == 0)
+  {
+    CheckSceCmd(3);
+  }
+  if (timer % 3000 == 0)
   {
     GetIotCmd(0);
-    CheckSceCmd(5);
-  }
-  if (timer % 5000 == 0)
-  {
-    Send4Server_LightStrength_D6(LightStrength);
   }
   if (timer % 6000 == 0)
   {
-    if (ErrCnt > 10)
+    if (ErrCnt > 100)
     {
-      Connect2Server();
+      resetValue();
+      if(Connect2Server())
+        InitRsaAndPin();
     }
-    if (ErrCnt > 13)
+    if (ErrCnt > 1000)
     {
       ESP.restart();
     }
